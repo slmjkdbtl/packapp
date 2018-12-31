@@ -1,6 +1,7 @@
 // wengwengweng
 
 use std::fs;
+use std::path::Path;
 use clap::{App, AppSettings, Arg, Error, ErrorKind};
 
 fn main() {
@@ -33,14 +34,17 @@ fn main() {
 			.requires("BIN"))
 		.get_matches();
 
-	let name = matches.value_of("BIN").unwrap();
-	let ident = format!("com.company.{}", name);
+	let bin = matches.value_of("BIN").unwrap();
+
+	require(bin);
+
+	let ident = format!("com.company.{}", bin);
 	let ident = matches.value_of("IDENT").unwrap_or(&ident);
-	let dname = matches.value_of("DNAME").unwrap_or(name);
+	let dname = matches.value_of("DNAME").unwrap_or(bin);
 	let version = matches.value_of("VERSION").unwrap_or("0.0.0");
 
-	pack(name, dname, version, ident);
-	println!("created {}.app", name);
+	pack(bin, dname, version, ident);
+	println!("created {}.app", bin);
 
 }
 
@@ -70,6 +74,12 @@ fn pack(name: &str, dname: &str, version: &str, ident: &str) {
 
 fn fail(msg: &str, kind: ErrorKind) {
 	Error::with_description(msg, kind).exit();
+}
+
+fn require(path: &str) {
+	if !Path::new(path).exists() {
+		fail(&format!("\"{}\" not found", path), ErrorKind::Io);
+	}
 }
 
 fn mkdir(dir: &str) {
