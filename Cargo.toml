@@ -9,5 +9,5 @@ description = "pack a binary to MacOS .app bundle"
 license = "Zlib"
 
 [dependencies]
-clap = "*"
+clap = "^2"
 
