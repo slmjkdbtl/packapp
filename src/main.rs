@@ -16,25 +16,30 @@ fn main() {
 			.required(true)
 			.help("the binary to pack"))
 		.arg(Arg::with_name("DNAME")
-			.short("d")
 			.long("display-name")
 			.takes_value(true)
-			.help("the display name")
 			.requires("BIN"))
 		.arg(Arg::with_name("IDENT")
-			.short("i")
 			.long("identifier")
 			.takes_value(true)
-			.help("the identifier used for the bundle")
+			.requires("BIN"))
+		.arg(Arg::with_name("VERSION")
+			.long("version")
+			.takes_value(true)
+			.requires("BIN"))
+		.arg(Arg::with_name("ICON")
+			.long("icon")
+			.takes_value(true)
 			.requires("BIN"))
 		.get_matches();
 
 	let name = matches.value_of("BIN").unwrap();
-	let ident = &format!("com.company.{}", name);
-	let ident = matches.value_of("IDENT").unwrap_or(ident);
+	let ident = format!("com.company.{}", name);
+	let ident = matches.value_of("IDENT").unwrap_or(&ident);
 	let dname = matches.value_of("DNAME").unwrap_or(name);
+	let version = matches.value_of("VERSION").unwrap_or("0.0.0");
 
-	pack(name, dname, "0.0.0", ident);
+	pack(name, dname, version, ident);
 	println!("created {}.app", name);
 
 }
