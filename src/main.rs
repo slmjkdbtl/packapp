@@ -1,7 +1,7 @@
 // wengwengweng
 
 use std::fs;
-use clap::{App, AppSettings, Arg};
+use clap::{App, AppSettings, Arg, Error, ErrorKind};
 
 fn main() {
 
@@ -13,6 +13,7 @@ fn main() {
 		.setting(AppSettings::TrailingVarArg)
 		.arg(Arg::with_name("BIN")
 			.takes_value(true)
+			.required(true)
 			.help("the binary to pack"))
 		.arg(Arg::with_name("DNAME")
 			.short("d")
@@ -28,19 +29,13 @@ fn main() {
 			.requires("BIN"))
 		.get_matches();
 
-	let bin = matches.value_of("BIN");
-	let ident = matches.value_of("IDENT");
-	let dname = matches.value_of("DNAME");
+	let name = matches.value_of("BIN").unwrap();
+	let ident = &format!("com.company.{}", name);
+	let ident = matches.value_of("IDENT").unwrap_or(ident);
+	let dname = matches.value_of("DNAME").unwrap_or(name);
 
-	match bin {
-		Some(name) => {
-			pack(name, name, "0.0.0", "domain.site.bin");
-			println!("created {}.app", name);
-		},
-		None => {
-			eprintln!("please provide a binary");
-		}
-	}
+	pack(name, dname, "0.0.0", ident);
+	println!("created {}.app", name);
 
 }
 
@@ -59,12 +54,35 @@ fn pack(name: &str, dname: &str, version: &str, ident: &str) {
 	let bin_path = format!("{}/{}", macos_dir, name);
 	let plist_path = format!("{}/info.plist", contents_dir);
 
-	fs::create_dir(bundle_dir).expect("failed to create dir");
-	fs::create_dir(contents_dir).expect("failed to create dir");
-	fs::create_dir(macos_dir).expect("failed to create dir");
-	fs::create_dir(resources_dir).expect("failed to create dir");
-	fs::copy(name, bin_path).expect("failed to copy bin");
-	fs::write(plist_path, plist).expect("unable to write plist");
+	mkdir(&bundle_dir);
+	mkdir(&contents_dir);
+	mkdir(&macos_dir);
+	mkdir(&resources_dir);
+	copy(name, &bin_path);
+	write(&plist_path, &plist);
 
+}
+
+fn fail(msg: &str, kind: ErrorKind) {
+	Error::with_description(msg, kind).exit();
+}
+
+fn mkdir(dir: &str) {
+	fs::create_dir(dir).unwrap_or_else(|s| {
+		fail(&format!("failed to create dir {}", dir), ErrorKind::Io);
+	});
+}
+
+fn copy(f1: &str, f2: &str) {
+	fs::copy(f1, f2).unwrap_or_else(|s| {
+		fail(&format!("failed to copy {} to {}", f1, f2), ErrorKind::Io);
+		return 0;
+	});
+}
+
+fn write(file: &str, content: &str) {
+	fs::write(file, content).unwrap_or_else(|s| {
+		fail(&format!("failed to write to {}", file), ErrorKind::Io);
+	});
 }
 
