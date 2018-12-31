@@ -1,15 +1,46 @@
 // wengwengweng
 
 use std::fs;
-use clap::App;
+use clap::{App, AppSettings, Arg};
 
 fn main() {
 
-	App::new(env!("CARGO_PKG_NAME"))
+	let matches = App::new(env!("CARGO_PKG_NAME"))
 		.version(env!("CARGO_PKG_VERSION"))
 		.about(env!("CARGO_PKG_DESCRIPTION"))
 		.author(env!("CARGO_PKG_AUTHORS"))
+		.setting(AppSettings::ColoredHelp)
+		.setting(AppSettings::TrailingVarArg)
+		.arg(Arg::with_name("BIN")
+			.takes_value(true)
+			.help("the binary to pack"))
+		.arg(Arg::with_name("DNAME")
+			.short("d")
+			.long("display-name")
+			.takes_value(true)
+			.help("the display name")
+			.requires("BIN"))
+		.arg(Arg::with_name("IDENT")
+			.short("i")
+			.long("identifier")
+			.takes_value(true)
+			.help("the identifier used for the bundle")
+			.requires("BIN"))
 		.get_matches();
+
+	let bin = matches.value_of("BIN");
+	let ident = matches.value_of("IDENT");
+	let dname = matches.value_of("DNAME");
+
+	match bin {
+		Some(name) => {
+			pack(name, name, "0.0.0", "domain.site.bin");
+			println!("created {}.app", name);
+		},
+		None => {
+			eprintln!("please provide a binary");
+		}
+	}
 
 }
 
