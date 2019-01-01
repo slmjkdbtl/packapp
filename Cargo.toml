@@ -10,4 +10,5 @@ license = "Zlib"
 
 [dependencies]
 clap = "^2"
+xml-rs = "^0"
 
