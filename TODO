@@ -1,14 +1,14 @@
 # wengwengweng
 
-# done
+== DONE
 - [+] basic packing
 - [+] icon
 - [+] write plist programmatically
+- [+] validate arguments before action
 
-# doing
-- [*] validate arguments before action
+== DOING
 
-# to do
+== TODO
 - [ ] copy frameworks
 - [ ] copy resources
 
