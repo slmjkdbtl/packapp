@@ -2,10 +2,11 @@
 
 # done
 - [+] basic packing
+- [+] icon
+- [+] write plist programmatically
 
 # doing
-- [*] write plist programmatically instead of pattern replacing
-- [*] icon
+- [*] validate arguments before action
 
 # to do
 - [ ] copy frameworks

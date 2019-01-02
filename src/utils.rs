@@ -12,13 +12,13 @@ pub fn exists(path: &str) -> bool {
 	return Path::new(path).exists();
 }
 
-pub fn require_exist(path: &str) {
+pub fn assert_exist(path: &str) {
 	if !exists(path) {
 		fail(&format!("\"{}\" not found", path), ErrorKind::Io);
 	}
 }
 
-pub fn require_ext(path: &str, expected_ext: &str) {
+pub fn assert_ext(path: &str, expected_ext: &str) {
 	if let Some(ext) = Path::new(path).extension() {
 		if ext != expected_ext {
 			fail(&format!("invalid file \"{}\", expected a .{}", path, expected_ext), ErrorKind::Io);
@@ -46,8 +46,15 @@ pub fn copy(f1: &str, f2: &str) {
 pub fn write(file: &str, content: &str) {
 	println!("> {}", file);
 	fs::write(file, content).unwrap_or_else(|s| {
-		fail(&format!("failed to write to {}", file), ErrorKind::Io);
+		fail(&format!("failed to write {}", file), ErrorKind::Io);
 	});
 }
 
+pub fn read(file: &str) -> String {
+	println!("< {}", file);
+	return fs::read_to_string(file).unwrap_or_else(|s| {
+		fail(&format!("failed to read {}", file), ErrorKind::Io);
+		return String::from("");
+	});
+}
 
