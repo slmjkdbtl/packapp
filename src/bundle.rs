@@ -1,11 +1,27 @@
 // wengwengweng
 
-use std::io::BufReader;
-use xml::reader::{EventReader, XmlEvent};
+use std::fs::File;
 use crate::utils;
 
+#[derive(Serialize, Deserialize, Debug)]
+struct Data {
+
+	CFBundleName: String,
+	CFBundleDisplayName: String,
+	CFBundleIdentifier: String,
+	CFBundleVersion: String,
+	CFBundlePackageType: String,
+	CFBundleExecutable: String,
+	CFBundleIconFile: String,
+	NSHighResolutionCapable: bool,
+
+}
+
 pub struct Bundle {
+
 	path: String,
+	data: Data,
+
 }
 
 impl Bundle {
@@ -15,19 +31,42 @@ impl Bundle {
 		utils::mkdir(&path);
 		utils::mkdir(&format!("{}/Contents", path));
 
-		return Self {
-			path: String::from(path),
+		let data = Data {
+
+			CFBundleName: String::from(""),
+			CFBundleDisplayName: String::from(""),
+			CFBundleIdentifier: String::from(""),
+			CFBundleVersion: String::from(""),
+			CFBundlePackageType: String::from("APPL"),
+			CFBundleExecutable: String::from(""),
+			CFBundleIconFile: String::from(""),
+			NSHighResolutionCapable: true,
+
 		};
 
+		let mut bundle = Self {
+			path: String::from(path),
+			data: data,
+		};
+
+		bundle.write_plist();
+
+		return bundle;
+
 	}
 
-	pub fn update_plist(&self) -> &Self {
+	pub fn write_plist(&self) -> &Self {
+
+		let file = File::create(format!("{}/Contents/Info.plist", self.path)).unwrap();
+		plist::serde::serialize_to_xml(&file, &self.data);
+
 		return self;
+
 	}
 
-	pub fn add_bin(&self, bin: &str) -> &Self {
+	pub fn add_bin(&mut self, bin: &str) -> &Self {
 
-		utils::require_exist(bin);
+		utils::assert_exist(bin);
 
 		let macos_dir = &format!("{}/Contents/MacOS", self.path);
 
@@ -36,12 +75,41 @@ impl Bundle {
 		}
 
 		utils::copy(bin, &format!("{}/{}", macos_dir, bin));
+		self.data.CFBundleExecutable = String::from(bin);
+		self.write_plist();
 
 		return self;
 
 	}
 
-	pub fn add_res(&self) -> &Self {
+	pub fn set_name(&mut self, name: &str) -> &Self {
+
+		self.data.CFBundleName = String::from(name);
+		self.write_plist();
+
+		return self;
+
+	}
+
+	pub fn set_display_name(&mut self, name: &str) -> &Self {
+
+		self.data.CFBundleDisplayName = String::from(name);
+		self.write_plist();
+
+		return self;
+
+	}
+
+	pub fn set_identifier(&mut self, ident: &str) -> &Self {
+
+		self.data.CFBundleIdentifier = String::from(ident);
+		self.write_plist();
+
+		return self;
+
+	}
+
+	pub fn set_icon(&mut self, icon: &str) -> &Self {
 
 		let res_dir = &format!("{}/Contents/Resources", self.path);
 
@@ -49,11 +117,17 @@ impl Bundle {
 			utils::mkdir(res_dir);
 		}
 
+		utils::assert_exist(icon);
+		utils::assert_ext(icon, "icns");
+		utils::copy(icon, &format!("{}/{}", res_dir, icon));
+		self.data.CFBundleIconFile = String::from(icon);
+		self.write_plist();
+
 		return self;
 
 	}
 
-	pub fn add_icon(&self) -> &Self {
+	pub fn add_res(&self) -> &Self {
 
 		let res_dir = &format!("{}/Contents/Resources", self.path);
 
