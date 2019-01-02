@@ -68,9 +68,15 @@ fn main() {
 		bundle.set_identifier(ident);
 	}
 
+	if let Some(version) = matches.value_of("VERSION") {
+		bundle.set_version(version);
+	}
+
 	if let Some(icon) = matches.value_of("ICON") {
 		bundle.set_icon(icon);
 	}
+
+	bundle.write();
 
 }
 
