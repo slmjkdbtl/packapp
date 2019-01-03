@@ -48,7 +48,7 @@ fn main() {
 		.get_matches();
 
 	let bin = matches.value_of("BIN").unwrap().to_owned();
-	let mut bundle = Bundle::new(&format!("{}.app", &bin));
+	let mut bundle = Bundle::new(&format!("{}.app", &utils::basename(&bin)));
 
 	bundle.add_bin(&bin);
 	bundle.set_name(matches.value_of("NAME").unwrap_or(""));

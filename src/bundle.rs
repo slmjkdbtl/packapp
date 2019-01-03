@@ -1,6 +1,8 @@
 // wengwengweng
 
-use serde_derive::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
+use std::path::Path;
 use std::fs::File;
 use clap::ErrorKind;
 use crate::utils;
@@ -168,7 +170,7 @@ impl Bundle {
 			utils::mkdir(path);
 		}
 
-		utils::copy(&file, &format!("{}/{}", path, file));
+		utils::copy(&file, &format!("{}/{}", path, utils::basename(file)));
 
 		return self;
 

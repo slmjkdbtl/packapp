@@ -68,8 +68,24 @@ pub fn read(file: &str) -> String {
 
 	return fs::read_to_string(file).unwrap_or_else(|s| {
 		fail(&format!("failed to read {}", file), ErrorKind::Io);
-		return String::from("");
+		return "".to_owned();
 	});
+
+}
+
+pub fn basename(path: &str) -> String {
+
+	let fname = Path::new(path).file_name();
+
+	if let Some(ffname) = fname {
+		if let Some(fffname) = ffname.to_str() {
+			return fffname.to_owned();
+		}
+	}
+
+	fail("invalid path {}", ErrorKind::Io);
+
+	return "".to_owned();
 
 }
 

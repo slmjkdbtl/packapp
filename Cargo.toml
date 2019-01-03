@@ -3,7 +3,7 @@
 [package]
 name        = "packapp"
 description = "pack a binary to MacOS .app bundle"
-version     = "0.1.0"
+version     = "0.1.1"
 authors     = ["t <voygagaga@outlook.com>"]
 edition     = "2018"
 license     = "Zlib"
@@ -13,6 +13,8 @@ readme      = "README.md"
 [dependencies]
 clap         = "~2.32"
 plist        = "~0.3"
-serde_derive = "~1.0"
-serde        = "~1.0"
+
+[dependencies.serde]
+version  = "~1.0"
+features = ["derive"]
 

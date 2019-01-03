@@ -6,6 +6,7 @@
 - [+] write plist programmatically
 - [+] validate arguments before action
 - [+] as lib
+- [+] fix copy file copy basename
 
 == DOING
 
