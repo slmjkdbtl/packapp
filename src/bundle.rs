@@ -1,5 +1,6 @@
 // wengwengweng
 
+use serde_derive::{Deserialize, Serialize};
 use std::fs::File;
 use clap::ErrorKind;
 use crate::utils;
@@ -37,7 +38,7 @@ pub struct Bundle {
 
 impl Bundle {
 
-	pub fn new(path: String) -> Self {
+	pub fn new(path: &str) -> Self {
 
 		let data = PlistData {
 			CFBundleName: "".to_owned(),

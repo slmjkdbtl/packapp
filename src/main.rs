@@ -1,8 +1,5 @@
 // wengwengweng
 
-#[macro_use]
-extern crate serde_derive;
-
 use clap::{App, AppSettings, Arg};
 
 mod bundle;
@@ -17,7 +14,6 @@ fn main() {
 		.about(env!("CARGO_PKG_DESCRIPTION"))
 		.author(env!("CARGO_PKG_AUTHORS"))
 		.setting(AppSettings::ColoredHelp)
-		.setting(AppSettings::TrailingVarArg)
 
 		.arg(Arg::with_name("BIN")
 			.takes_value(true)
@@ -52,7 +48,7 @@ fn main() {
 		.get_matches();
 
 	let bin = matches.value_of("BIN").unwrap().to_owned();
-	let mut bundle = Bundle::new(format!("{}.app", &bin));
+	let mut bundle = Bundle::new(&format!("{}.app", &bin));
 
 	bundle.add_bin(&bin);
 	bundle.set_name(matches.value_of("NAME").unwrap_or(""));

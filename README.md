@@ -2,12 +2,18 @@
 pack a binary to MacOS .app bundle
 
 ## install
-```bash
+Recommended to install with `cargo install`:
+```sh
 cargo install packapp
 ```
+to update to the latest version:
+```sh
+cargo install packapp --force
+```
+
 
 ## usage
-```bash
+```sh
 USAGE:
     packapp [OPTIONS] <BIN>
 
@@ -26,10 +32,12 @@ ARGS:
 ```
 
 ## example
-```bash
-# pack a binary named 'yo'
+to pack a binary with no settings
+```sh
 packapp yo
-# pack a binary with settings
+```
+with settings
+```sh
 packapp --identifier com.company.yo --name yo --display-name YO --icon icon.icns --version "1.0.0" yo
 ```
 
