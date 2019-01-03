@@ -13,12 +13,15 @@ pub fn exists(path: &str) -> bool {
 }
 
 pub fn assert_exist(path: &str) {
+
 	if !exists(path) {
 		fail(&format!("\"{}\" not found", path), ErrorKind::Io);
 	}
+
 }
 
 pub fn assert_ext(path: &str, expected_ext: &str) {
+
 	if let Some(ext) = Path::new(path).extension() {
 		if ext != expected_ext {
 			fail(&format!("invalid file \"{}\", expected a .{}", path, expected_ext), ErrorKind::Io);
@@ -26,35 +29,47 @@ pub fn assert_ext(path: &str, expected_ext: &str) {
 	} else {
 		fail(&format!("invalid file \"{}\"", path), ErrorKind::Io);
 	}
+
 }
 
 pub fn mkdir(dir: &str) {
+
 	println!("+ {}", dir);
-	fs::create_dir(dir).unwrap_or_else(|s| {
+
+	if fs::create_dir(dir).is_err() {
 		fail(&format!("failed to create dir {}", dir), ErrorKind::Io);
-	});
+	}
+
 }
 
 pub fn copy(f1: &str, f2: &str) {
+
 	println!("{} -> {}", f1, f2);
-	fs::copy(f1, f2).unwrap_or_else(|s| {
+
+	if fs::copy(f1, f2).is_err() {
 		fail(&format!("failed to copy {} to {}", f1, f2), ErrorKind::Io);
-		return 0;
-	});
+	}
+
 }
 
 pub fn write(file: &str, content: &str) {
+
 	println!("> {}", file);
-	fs::write(file, content).unwrap_or_else(|s| {
+
+	if fs::write(file, content).is_err() {
 		fail(&format!("failed to write {}", file), ErrorKind::Io);
-	});
+	}
+
 }
 
 pub fn read(file: &str) -> String {
+
 	println!("< {}", file);
+
 	return fs::read_to_string(file).unwrap_or_else(|s| {
 		fail(&format!("failed to read {}", file), ErrorKind::Io);
 		return String::from("");
 	});
+
 }
 

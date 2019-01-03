@@ -51,26 +51,14 @@ fn main() {
 
 		.get_matches();
 
-	let name = matches.value_of("BIN").unwrap().to_owned();
-	let mut bundle = Bundle::new(format!("{}.app", &name));
+	let bin = matches.value_of("BIN").unwrap().to_owned();
+	let mut bundle = Bundle::new(format!("{}.app", &bin));
 
-	bundle.add_bin(&name);
-
-	if let Some(name) = matches.value_of("NAME") {
-		bundle.set_name(name);
-	}
-
-	if let Some(dname) = matches.value_of("DNAME") {
-		bundle.set_display_name(dname);
-	}
-
-	if let Some(ident) = matches.value_of("IDENT") {
-		bundle.set_identifier(ident);
-	}
-
-	if let Some(version) = matches.value_of("VERSION") {
-		bundle.set_version(version);
-	}
+	bundle.add_bin(&bin);
+	bundle.set_name(matches.value_of("NAME").unwrap_or(""));
+	bundle.set_display_name(matches.value_of("DNAME").unwrap_or(""));
+	bundle.set_identifier(matches.value_of("IDENT").unwrap_or(""));
+	bundle.set_version(matches.value_of("VERSION").unwrap_or(""));
 
 	if let Some(icon) = matches.value_of("ICON") {
 		bundle.set_icon(icon);

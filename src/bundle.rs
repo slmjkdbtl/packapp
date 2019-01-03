@@ -1,6 +1,7 @@
 // wengwengweng
 
 use std::fs::File;
+use clap::ErrorKind;
 use crate::utils;
 
 enum AppDir {
@@ -10,7 +11,7 @@ enum AppDir {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Data {
+struct PlistData {
 
 	CFBundleName: String,
 	CFBundleDisplayName: String,
@@ -26,7 +27,7 @@ struct Data {
 pub struct Bundle {
 
 	path: String,
-	data: Data,
+	data: PlistData,
 	bin: Option<String>,
 	icon: Option<String>,
 	frameworks: Vec<String>,
@@ -38,7 +39,7 @@ impl Bundle {
 
 	pub fn new(path: String) -> Self {
 
-		let data = Data {
+		let data = PlistData {
 			CFBundleName: "".to_owned(),
 			CFBundleDisplayName: "".to_owned(),
 			CFBundleIdentifier: "".to_owned(),
@@ -59,15 +60,6 @@ impl Bundle {
 		};
 
 		return bundle;
-
-	}
-
-	pub fn write_plist(&self) -> &Self {
-
-		let file = File::create(format!("{}/Contents/Info.plist", self.path)).unwrap();
-		plist::serde::serialize_to_xml(&file, &self.data);
-
-		return self;
 
 	}
 
@@ -142,9 +134,26 @@ impl Bundle {
 
 	}
 
-	pub fn copy(&self, file: &str, des: AppDir, subdir: &str) -> &Self {
+	pub fn write(&self) {
 
-		let mut dir = "";
+		utils::mkdir(&self.path);
+		utils::mkdir(&format!("{}/Contents", self.path));
+
+		if let Some(bin) = &self.bin {
+			self.copy(bin, AppDir::MacOS, "");
+		}
+
+		if let Some(icon) = &self.icon {
+			self.copy(icon, AppDir::Resources, "");
+		}
+
+		self.write_plist();
+
+	}
+
+	fn copy(&self, file: &str, des: AppDir, subdir: &str) -> &Self {
+
+		let dir;
 
 		match des {
 			AppDir::MacOS => dir = "MacOS",
@@ -164,24 +173,15 @@ impl Bundle {
 
 	}
 
-	pub fn write(&self) {
+	fn write_plist(&self) -> &Self {
 
-		utils::mkdir(&self.path);
-		utils::mkdir(&format!("{}/Contents", self.path));
+		let file = File::create(format!("{}/Contents/Info.plist", self.path)).unwrap();
 
-		let macos_dir = &format!("{}/Contents/MacOS", self.path);
-		let res_dir = &format!("{}/Contents/Resources", self.path);
-		let frameworks_dir = &format!("{}/Contents/Frameworks", self.path);
-
-		if let Some(bin) = &self.bin {
-			self.copy(bin, AppDir::MacOS, "");
+		if plist::serde::serialize_to_xml(&file, &self.data).is_err() {
+			utils::fail("failed to write plist", ErrorKind::Io);
 		}
 
-		if let Some(icon) = &self.icon {
-			self.copy(icon, AppDir::Resources, "");
-		}
-
-		self.write_plist();
+		return self;
 
 	}
 
