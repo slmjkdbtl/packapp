@@ -3,7 +3,7 @@
 [package]
 name        = "packapp"
 description = "pack a binary to MacOS .app bundle"
-version     = "0.0.5"
+version     = "0.1.0"
 authors     = ["t <voygagaga@outlook.com>"]
 edition     = "2018"
 license     = "Zlib"
@@ -11,8 +11,8 @@ repository  = "https://github.com/slmjkdbtl/packapp/"
 readme      = "README.md"
 
 [dependencies]
-clap         = "^2"
-plist        = "^0"
-serde_derive = "^1"
-serde        = "^1"
+clap         = "~2.32"
+plist        = "~0.3"
+serde_derive = "~1.0"
+serde        = "~1.0"
 
