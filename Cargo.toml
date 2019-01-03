@@ -1,16 +1,17 @@
 # wengwengweng
 
 [package]
-name = "packapp"
-version = "0.0.3"
-authors = ["t <voygagaga@outlook.com>"]
-edition = "2018"
+name        = "packapp"
 description = "pack a binary to MacOS .app bundle"
-license = "Zlib"
+version     = "0.0.4"
+authors     = ["t <voygagaga@outlook.com>"]
+edition     = "2018"
+license     = "Zlib"
+repository  = "https://github.com/slmjkdbtl/packapp/"
 
 [dependencies]
-clap = "^2"
-plist = "^0"
+clap         = "^2"
+plist        = "^0"
 serde_derive = "^1"
-serde = "^1"
+serde        = "^1"
 
