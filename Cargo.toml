@@ -3,11 +3,12 @@
 [package]
 name        = "packapp"
 description = "pack a binary to MacOS .app bundle"
-version     = "0.0.4"
+version     = "0.0.5"
 authors     = ["t <voygagaga@outlook.com>"]
 edition     = "2018"
 license     = "Zlib"
 repository  = "https://github.com/slmjkdbtl/packapp/"
+readme      = "README.md"
 
 [dependencies]
 clap         = "^2"
