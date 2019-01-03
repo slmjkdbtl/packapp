@@ -66,10 +66,10 @@ impl Bundle {
 
 	}
 
-	pub fn add_bin(&mut self, bin: &str) -> &Self {
+	pub fn set_bin(&mut self, bin: &str) -> &Self {
 
 		utils::assert_exist(bin);
-		self.data.CFBundleExecutable = String::from(bin);
+		self.data.CFBundleExecutable = utils::basename(bin);
 		self.bin = Some(bin.to_owned());
 
 		return self;
@@ -112,7 +112,7 @@ impl Bundle {
 
 		utils::assert_exist(icon);
 		utils::assert_ext(icon, "icns");
-		self.data.CFBundleIconFile = String::from(icon);
+		self.data.CFBundleIconFile = utils::basename(icon);
 		self.icon = Some(icon.to_owned());
 
 		return self;
