@@ -50,7 +50,7 @@ fn main() {
 	let bin = matches.value_of("BIN").unwrap().to_owned();
 	let mut bundle = Bundle::new(&format!("{}.app", &utils::basename(&bin)));
 
-	bundle.add_bin(&bin);
+	bundle.set_bin(&bin);
 	bundle.set_name(matches.value_of("NAME").unwrap_or(""));
 	bundle.set_display_name(matches.value_of("DNAME").unwrap_or(""));
 	bundle.set_identifier(matches.value_of("IDENT").unwrap_or(""));
