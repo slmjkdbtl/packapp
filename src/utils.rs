@@ -2,6 +2,8 @@
 
 use std::fs;
 use std::path::Path;
+use std::path::PathBuf;
+
 use clap::{Error, ErrorKind};
 
 pub fn fail(msg: &str, kind: ErrorKind) {
@@ -10,6 +12,14 @@ pub fn fail(msg: &str, kind: ErrorKind) {
 
 pub fn exists(path: &str) -> bool {
 	return Path::new(path).exists();
+}
+
+pub fn is_dir(path: &str) -> bool {
+	return Path::new(path).is_dir();
+}
+
+pub fn is_file(path: &str) -> bool {
+	return Path::new(path).is_file();
 }
 
 pub fn assert_exist(path: &str) {
@@ -47,6 +57,21 @@ pub fn copy(f1: &str, f2: &str) {
 	println!("{} -> {}", f1, f2);
 
 	if fs::copy(f1, f2).is_err() {
+		fail(&format!("failed to copy {} to {}", f1, f2), ErrorKind::Io);
+	}
+
+}
+
+pub fn copy_dir(f1: &str, f2: &str) {
+
+	println!("{} -> {}", f1, f2);
+
+	let mut options = fs_extra::dir::CopyOptions::new();
+
+	options.overwrite = true;
+	options.copy_inside = true;
+
+	if fs_extra::dir::copy(f1, f2, &options).is_err() {
 		fail(&format!("failed to copy {} to {}", f1, f2), ErrorKind::Io);
 	}
 

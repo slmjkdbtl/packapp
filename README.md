@@ -1,7 +1,7 @@
 # packapp
 pack a binary to MacOS .app bundle
 
-## install
+### install
 Recommended to install with `cargo install`:
 ```sh
 cargo install packapp
@@ -11,8 +11,7 @@ to update to the latest version:
 cargo install packapp --force
 ```
 
-
-## usage
+### usage
 ```sh
 USAGE:
     packapp [OPTIONS] <BIN>
@@ -31,7 +30,7 @@ ARGS:
     <BIN>    the binary to pack
 ```
 
-## example
+### example
 to pack a binary with no settings
 ```sh
 packapp yo

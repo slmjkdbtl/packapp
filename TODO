@@ -7,10 +7,11 @@
 - [+] validate arguments before action
 - [+] as lib
 - [+] fix copy file copy basename
+- [+] copy frameworks
+- [+] copy resources
 
 == DOING
 
 == TODO
-- [ ] copy frameworks
-- [ ] copy resources
+- [ ] copy multiple resources and frameworks
 
