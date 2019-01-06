@@ -1,10 +1,12 @@
 // wengwengweng
 
-use serde::Deserialize;
-use serde::Serialize;
 use std::path::Path;
 use std::fs::File;
+
+use serde::Deserialize;
+use serde::Serialize;
 use clap::ErrorKind;
+
 use crate::utils;
 
 enum AppDir {
@@ -119,19 +121,19 @@ impl Bundle {
 
 	}
 
-	pub fn add_res(&mut self, file: &str) -> &Self {
+	pub fn add_res(&mut self, path: &str) -> &Self {
 
-		utils::assert_exist(file);
-		self.resources.push(file.to_owned());
+		utils::assert_exist(path);
+		self.resources.push(path.to_owned());
 
 		return self;
 
 	}
 
-	pub fn add_frameworks(&mut self, file: &str) -> &Self {
+	pub fn add_frameworks(&mut self, path: &str) -> &Self {
 
-		utils::assert_exist(file);
-		self.frameworks.push(file.to_owned());
+		utils::assert_exist(path);
+		self.frameworks.push(path.to_owned());
 
 		return self;
 
@@ -143,18 +145,26 @@ impl Bundle {
 		utils::mkdir(&format!("{}/Contents", self.path));
 
 		if let Some(bin) = &self.bin {
-			self.copy(bin, AppDir::MacOS, "");
+			self.copy(bin, AppDir::MacOS);
 		}
 
 		if let Some(icon) = &self.icon {
-			self.copy(icon, AppDir::Resources, "");
+			self.copy(icon, AppDir::Resources);
+		}
+
+		for r in &self.resources {
+			self.copy(&r, AppDir::Resources);
+		}
+
+		for f in &self.frameworks {
+			self.copy(&f, AppDir::Frameworks);
 		}
 
 		self.write_plist();
 
 	}
 
-	fn copy(&self, file: &str, des: AppDir, subdir: &str) -> &Self {
+	fn copy(&self, file: &str, des: AppDir) -> &Self {
 
 		let dir;
 
@@ -170,7 +180,11 @@ impl Bundle {
 			utils::mkdir(path);
 		}
 
-		utils::copy(&file, &format!("{}/{}", path, utils::basename(file)));
+		if utils::is_file(file) {
+			utils::copy(&file, &format!("{}/{}", path, utils::basename(file)));
+		} else if utils::is_dir(file) {
+			utils::copy_dir(&file, &format!("{}/{}", path, utils::basename(file)));
+		}
 
 		return self;
 

@@ -22,28 +22,31 @@ fn main() {
 
 		.arg(Arg::with_name("NAME")
 			.long("name")
-			.takes_value(true)
-			.requires("BIN"))
+			.takes_value(true))
 
 		.arg(Arg::with_name("DNAME")
 			.long("display-name")
-			.takes_value(true)
-			.requires("BIN"))
+			.takes_value(true))
 
 		.arg(Arg::with_name("IDENT")
 			.long("identifier")
-			.takes_value(true)
-			.requires("BIN"))
+			.takes_value(true))
 
 		.arg(Arg::with_name("VERSION")
 			.long("version")
-			.takes_value(true)
-			.requires("BIN"))
+			.takes_value(true))
 
 		.arg(Arg::with_name("ICON")
 			.long("icon")
-			.takes_value(true)
-			.requires("BIN"))
+			.takes_value(true))
+
+		.arg(Arg::with_name("RES")
+			.long("resources")
+			.takes_value(true))
+
+		.arg(Arg::with_name("FRAMEWORK")
+			.long("frameworks")
+			.takes_value(true))
 
 		.get_matches();
 
@@ -58,6 +61,14 @@ fn main() {
 
 	if let Some(icon) = matches.value_of("ICON") {
 		bundle.set_icon(icon);
+	}
+
+	if let Some(res) = matches.value_of("RES") {
+		bundle.add_res(res);
+	}
+
+	if let Some(framework) = matches.value_of("FRAMEWORK") {
+		bundle.add_frameworks(framework);
 	}
 
 	bundle.write();
