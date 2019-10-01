@@ -17,4 +17,5 @@
 - use structopt
 - copy multiple resources and frameworks
 - proper error handling
+- out dir
 

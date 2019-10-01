@@ -36,12 +36,19 @@ struct Opt {
 	#[structopt(name = "BIN", parse(from_os_str))]
 	bin: PathBuf,
 
+	#[structopt(short = "o", long, parse(from_os_str))]
+	out: Option<PathBuf>,
+
 }
 
 fn pack() -> Result<(), Error> {
 
     let opt = Opt::from_args();
 	let mut bundle = Bundle::new(opt.bin)?;
+
+	if let Some(out) = &opt.out {
+		bundle.set_output(out);
+	}
 
 	if let Some(name) = &opt.name {
 		bundle.set_name(name);
@@ -78,12 +85,8 @@ fn pack() -> Result<(), Error> {
 }
 
 fn main() {
-
-	let result = pack();
-
-	if let Err(e) = result {
+	if let Err(e) = pack() {
 		println!("{}", e);
 	}
-
 }
 

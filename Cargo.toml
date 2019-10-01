@@ -3,7 +3,7 @@
 [package]
 name = "packapp"
 description = "pack a binary to MacOS .app bundle"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["tga <tga@wengwengweng.me>"]
 repository = "https://github.com/slmjkdbtl/DIRTY"
 license = "Zlib"
