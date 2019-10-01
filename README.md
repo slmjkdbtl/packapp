@@ -14,20 +14,22 @@ cargo install packapp --force
 ### usage
 ```sh
 USAGE:
-    packapp [OPTIONS] <BIN>
+    packapp [OPTIONS] <bin>
 
 FLAGS:
     -h, --help    Prints help information
 
 OPTIONS:
-        --display-name <DNAME>
-        --icon <ICON>
-        --identifier <IDENT>
-        --name <NAME>
-        --version <VERSION>
+    -d, --display-name <display-name>
+    -f, --frameworks <frameworks>...
+    -c, --icon <icon>
+    -i, --identifier <identifier>
+    -n, --name <name>
+    -r, --resources <resources>...
+    -v, --version <version>
 
 ARGS:
-    <BIN>    the binary to pack
+    <bin>
 ```
 
 ### example
