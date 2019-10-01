@@ -9,26 +9,29 @@ use packapp::*;
 #[structopt(name = "packapp")]
 struct Opt {
 
-	#[structopt(long, parse(from_os_str))]
+	#[structopt(short = "r", long, parse(from_os_str))]
 	resources: Vec<PathBuf>,
 
-	#[structopt(long, parse(from_os_str))]
+	#[structopt(short = "f", long, parse(from_os_str))]
 	frameworks: Vec<PathBuf>,
 
-	#[structopt(long, parse(from_os_str))]
+	#[structopt(short = "c", long, parse(from_os_str))]
 	icon: Option<PathBuf>,
 
-	#[structopt(long)]
+	#[structopt(short = "i", long)]
 	identifier: Option<String>,
 
-	#[structopt(long)]
+	#[structopt(short = "n", long)]
 	name: Option<String>,
 
-	#[structopt(long)]
+	#[structopt(short = "d", long)]
 	display_name: Option<String>,
 
-	#[structopt(long)]
+	#[structopt(short = "v", long)]
 	version: Option<String>,
+
+	#[structopt(short = "p", long)]
+	plain: bool,
 
 	#[structopt(name = "BIN", parse(from_os_str))]
 	bin: PathBuf,
@@ -40,10 +43,21 @@ fn pack() -> Result<(), Error> {
     let opt = Opt::from_args();
 	let mut bundle = Bundle::new(opt.bin)?;
 
-	bundle.set_name(&opt.name.unwrap_or(String::new()));
-	bundle.set_display_name(&opt.display_name.unwrap_or(String::new()));
-	bundle.set_identifier(&opt.identifier.unwrap_or(String::new()));
-	bundle.set_version(&opt.version.unwrap_or(String::new()));
+	if let Some(name) = &opt.name {
+		bundle.set_name(name);
+	}
+
+	if let Some(display_name) = &opt.display_name {
+		bundle.set_display_name(display_name);
+	}
+
+	if let Some(identifier) = &opt.identifier {
+		bundle.set_identifier(identifier);
+	}
+
+	if let Some(version) = &opt.version {
+		bundle.set_version(version);
+	}
 
 	if let Some(icon) = opt.icon {
 		bundle.set_icon(icon)?;

@@ -1,34 +1,33 @@
 // wengwengweng
 
+// https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html
+
 use std::path::PathBuf;
 use std::path::Path;
-use std::fs::File;
 
 use serde::Deserialize;
 use serde::Serialize;
 
 use crate::utils;
 use crate::Result;
-use crate::Error;
 
 enum AppDir {
 	Resources,
 	Frameworks,
+	Plugins,
 	MacOS,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 struct PlistData {
-
-	CFBundleName: String,
-	CFBundleDisplayName: String,
-	CFBundleIdentifier: String,
-	CFBundleVersion: String,
-	CFBundlePackageType: String,
-	CFBundleExecutable: String,
-	CFBundleIconFile: String,
-	NSHighResolutionCapable: bool,
-
+	CFBundleName: Option<String>,
+	CFBundleDisplayName: Option<String>,
+	CFBundleIdentifier: Option<String>,
+	CFBundleVersion: Option<String>,
+	CFBundlePackageType: Option<String>,
+	CFBundleExecutable: Option<String>,
+	CFBundleIconFile: Option<String>,
+	CFBundleSignature: Option<String>,
 }
 
 pub struct Bundle {
@@ -53,14 +52,14 @@ impl Bundle {
 		let name = utils::basename(path)?;
 
 		let data = PlistData {
-			CFBundleName: "".to_owned(),
-			CFBundleDisplayName: "".to_owned(),
-			CFBundleIdentifier: "".to_owned(),
-			CFBundleVersion: "".to_owned(),
-			CFBundlePackageType: "APPL".to_owned(),
-			CFBundleExecutable: name.clone(),
-			CFBundleIconFile: "".to_owned(),
-			NSHighResolutionCapable: true,
+			CFBundleName: None,
+			CFBundleDisplayName: None,
+			CFBundleIdentifier: None,
+			CFBundleVersion: None,
+			CFBundlePackageType: Some(String::from("APPL")),
+			CFBundleExecutable: Some(String::from(name.clone())),
+			CFBundleIconFile: None,
+			CFBundleSignature: None,
 		};
 
 		let bundle = Self {
@@ -77,19 +76,19 @@ impl Bundle {
 	}
 
 	pub fn set_name(&mut self, name: &str) {
-		self.data.CFBundleName = String::from(name);
+		self.data.CFBundleName = Some(String::from(name));
 	}
 
 	pub fn set_display_name(&mut self, name: &str) {
-		self.data.CFBundleDisplayName = String::from(name);
+		self.data.CFBundleDisplayName = Some(String::from(name));
 	}
 
 	pub fn set_identifier(&mut self, ident: &str) {
-		self.data.CFBundleIdentifier = String::from(ident);
+		self.data.CFBundleIdentifier = Some(String::from(ident));
 	}
 
 	pub fn set_version(&mut self, version: &str) {
-		self.data.CFBundleVersion = String::from(version);
+		self.data.CFBundleVersion = Some(String::from(version));
 	}
 
 	pub fn set_icon(&mut self, path: impl AsRef<Path>) -> Result<()> {
@@ -97,8 +96,8 @@ impl Bundle {
 		let path = path.as_ref();
 
 		utils::assert_exists(path)?;
-		utils::assert_ext(path, "icns")?;
-		self.data.CFBundleIconFile = format!("{}", utils::base(path)?.display());
+// 		utils::assert_ext(path, "icns")?;
+		self.data.CFBundleIconFile = Some(format!("{}", utils::base(path)?.display()));
 		self.icon = Some(path.to_owned());
 
 		return Ok(());
@@ -160,6 +159,7 @@ impl Bundle {
 			AppDir::MacOS => "MacOS",
 			AppDir::Resources => "Resources",
 			AppDir::Frameworks => "Frameworks",
+			AppDir::Plugins => "Plugins",
 		};
 
 		let dir = self.path.join("Contents").join(dir);

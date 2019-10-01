@@ -3,6 +3,9 @@
 run +args="":
 	cargo run -- {{args}}
 
+install:
+	cargo install --force --path .
+
 doc crate="packapp":
 	cargo doc --no-deps --open -p {{crate}}
 
