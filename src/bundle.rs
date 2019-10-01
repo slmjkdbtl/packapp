@@ -34,7 +34,7 @@ pub struct Bundle {
 
 	bin: PathBuf,
 	data: PlistData,
-	path: PathBuf,
+	output: PathBuf,
 	icon: Option<PathBuf>,
 	frameworks: Vec<PathBuf>,
 	resources: Vec<PathBuf>,
@@ -65,7 +65,7 @@ impl Bundle {
 		let bundle = Self {
 			bin: path.to_owned(),
 			data: data,
-			path: PathBuf::from(format!("{}.app", name)),
+			output: PathBuf::from(format!("{}.app", name)),
 			icon: None,
 			frameworks: vec![],
 			resources: vec![],
@@ -73,6 +73,10 @@ impl Bundle {
 
 		return Ok(bundle);
 
+	}
+
+	pub fn set_output(&mut self, path: impl AsRef<Path>) {
+		self.output = path.as_ref().to_owned();
 	}
 
 	pub fn set_name(&mut self, name: &str) {
@@ -128,8 +132,8 @@ impl Bundle {
 
 	pub fn write(&self) -> Result<()> {
 
-		utils::mkdir(&self.path)?;
-		utils::mkdir(self.path.join("Contents"))?;
+		utils::mkdir(&self.output)?;
+		utils::mkdir(self.output.join("Contents"))?;
 
 		self.copy(&self.bin, AppDir::MacOS)?;
 
@@ -162,7 +166,7 @@ impl Bundle {
 			AppDir::Plugins => "Plugins",
 		};
 
-		let dir = self.path.join("Contents").join(dir);
+		let dir = self.output.join("Contents").join(dir);
 
 		if !utils::exists(&dir) {
 			utils::mkdir(&dir)?;
@@ -180,7 +184,7 @@ impl Bundle {
 
 	fn write_plist(&self) -> Result<()> {
 
-		let path = self.path.join("Contents").join("Info.plist");
+		let path = self.output.join("Contents").join("Info.plist");
 
 		plist::to_file_xml(&path, &self.data)?;
 
