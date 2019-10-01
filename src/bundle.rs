@@ -1,13 +1,15 @@
 // wengwengweng
 
+use std::path::PathBuf;
 use std::path::Path;
 use std::fs::File;
 
 use serde::Deserialize;
 use serde::Serialize;
-use clap::ErrorKind;
 
 use crate::utils;
+use crate::Result;
+use crate::Error;
 
 enum AppDir {
 	Resources,
@@ -31,18 +33,24 @@ struct PlistData {
 
 pub struct Bundle {
 
-	path: String,
+	bin: PathBuf,
 	data: PlistData,
-	bin: Option<String>,
-	icon: Option<String>,
-	frameworks: Vec<String>,
-	resources: Vec<String>,
+	path: PathBuf,
+	icon: Option<PathBuf>,
+	frameworks: Vec<PathBuf>,
+	resources: Vec<PathBuf>,
 
 }
 
 impl Bundle {
 
-	pub fn new(path: &str) -> Self {
+	pub fn new(path: impl AsRef<Path>) -> Result<Self> {
+
+		let path = path.as_ref();
+
+		utils::assert_exists(path)?;
+
+		let name = utils::basename(path)?;
 
 		let data = PlistData {
 			CFBundleName: "".to_owned(),
@@ -50,155 +58,133 @@ impl Bundle {
 			CFBundleIdentifier: "".to_owned(),
 			CFBundleVersion: "".to_owned(),
 			CFBundlePackageType: "APPL".to_owned(),
-			CFBundleExecutable: "".to_owned(),
+			CFBundleExecutable: name.clone(),
 			CFBundleIconFile: "".to_owned(),
 			NSHighResolutionCapable: true,
 		};
 
 		let bundle = Self {
-			path: path.to_owned(),
+			bin: path.to_owned(),
 			data: data,
-			bin: None,
+			path: PathBuf::from(format!("{}.app", name)),
 			icon: None,
 			frameworks: vec![],
 			resources: vec![],
 		};
 
-		return bundle;
+		return Ok(bundle);
 
 	}
 
-	pub fn set_bin(&mut self, bin: &str) -> &Self {
-
-		utils::assert_exist(bin);
-		self.data.CFBundleExecutable = utils::basename(bin);
-		self.bin = Some(bin.to_owned());
-
-		return self;
-
-	}
-
-	pub fn set_name(&mut self, name: &str) -> &Self {
-
+	pub fn set_name(&mut self, name: &str) {
 		self.data.CFBundleName = String::from(name);
-
-		return self;
-
 	}
 
-	pub fn set_display_name(&mut self, name: &str) -> &Self {
-
+	pub fn set_display_name(&mut self, name: &str) {
 		self.data.CFBundleDisplayName = String::from(name);
-
-		return self;
-
 	}
 
-	pub fn set_identifier(&mut self, ident: &str) -> &Self {
-
+	pub fn set_identifier(&mut self, ident: &str) {
 		self.data.CFBundleIdentifier = String::from(ident);
-
-		return self;
-
 	}
 
-	pub fn set_version(&mut self, version: &str) -> &Self {
-
+	pub fn set_version(&mut self, version: &str) {
 		self.data.CFBundleVersion = String::from(version);
+	}
 
-		return self;
+	pub fn set_icon(&mut self, path: impl AsRef<Path>) -> Result<()> {
+
+		let path = path.as_ref();
+
+		utils::assert_exists(path)?;
+		utils::assert_ext(path, "icns")?;
+		self.data.CFBundleIconFile = format!("{}", utils::base(path)?.display());
+		self.icon = Some(path.to_owned());
+
+		return Ok(());
 
 	}
 
-	pub fn set_icon(&mut self, icon: &str) -> &Self {
+	pub fn add_resource(&mut self, path: impl AsRef<Path>) -> Result<()> {
 
-		utils::assert_exist(icon);
-		utils::assert_ext(icon, "icns");
-		self.data.CFBundleIconFile = utils::basename(icon);
-		self.icon = Some(icon.to_owned());
+		let path = path.as_ref();
 
-		return self;
-
-	}
-
-	pub fn add_res(&mut self, path: &str) -> &Self {
-
-		utils::assert_exist(path);
+		utils::assert_exists(path)?;
 		self.resources.push(path.to_owned());
 
-		return self;
+		return Ok(());
 
 	}
 
-	pub fn add_frameworks(&mut self, path: &str) -> &Self {
+	pub fn add_framework(&mut self, path: impl AsRef<Path>) -> Result<()> {
 
-		utils::assert_exist(path);
+		let path = path.as_ref();
+
+		utils::assert_exists(path)?;
 		self.frameworks.push(path.to_owned());
 
-		return self;
+		return Ok(());
 
 	}
 
-	pub fn write(&self) {
+	pub fn write(&self) -> Result<()> {
 
-		utils::mkdir(&self.path);
-		utils::mkdir(&format!("{}/Contents", self.path));
+		utils::mkdir(&self.path)?;
+		utils::mkdir(self.path.join("Contents"))?;
 
-		if let Some(bin) = &self.bin {
-			self.copy(bin, AppDir::MacOS);
-		}
+		self.copy(&self.bin, AppDir::MacOS)?;
 
 		if let Some(icon) = &self.icon {
-			self.copy(icon, AppDir::Resources);
+			self.copy(icon, AppDir::Resources)?;
 		}
 
 		for r in &self.resources {
-			self.copy(&r, AppDir::Resources);
+			self.copy(&r, AppDir::Resources)?;
 		}
 
 		for f in &self.frameworks {
-			self.copy(&f, AppDir::Frameworks);
+			self.copy(&f, AppDir::Frameworks)?;
 		}
 
-		self.write_plist();
+		self.write_plist()?;
+
+		return Ok(());
 
 	}
 
-	fn copy(&self, file: &str, des: AppDir) -> &Self {
+	fn copy(&self, path: impl AsRef<Path>, des: AppDir) -> Result<()> {
 
-		let dir;
+		let path = path.as_ref();
 
-		match des {
-			AppDir::MacOS => dir = "MacOS",
-			AppDir::Resources => dir = "Resources",
-			AppDir::Frameworks => dir = "Frameworks",
+		let dir = match des {
+			AppDir::MacOS => "MacOS",
+			AppDir::Resources => "Resources",
+			AppDir::Frameworks => "Frameworks",
+		};
+
+		let dir = self.path.join("Contents").join(dir);
+
+		if !utils::exists(&dir) {
+			utils::mkdir(&dir)?;
 		}
 
-		let path = &format!("{}/Contents/{}", self.path, dir);
-
-		if !utils::exists(path) {
-			utils::mkdir(path);
+		if utils::is_file(path) {
+			utils::copy(path, dir.join(utils::base(path)?))?;
+		} else if utils::is_dir(path) {
+			utils::copy_dir(path, dir.join(utils::base(path)?))?;
 		}
 
-		if utils::is_file(file) {
-			utils::copy(&file, &format!("{}/{}", path, utils::basename(file)));
-		} else if utils::is_dir(file) {
-			utils::copy_dir(&file, &format!("{}/{}", path, utils::basename(file)));
-		}
-
-		return self;
+		return Ok(());
 
 	}
 
-	fn write_plist(&self) -> &Self {
+	fn write_plist(&self) -> Result<()> {
 
-		let file = File::create(format!("{}/Contents/Info.plist", self.path)).unwrap();
+		let path = self.path.join("Contents").join("Info.plist");
 
-		if plist::serde::serialize_to_xml(&file, &self.data).is_err() {
-			utils::fail("failed to write plist", ErrorKind::Io);
-		}
+		plist::to_file_xml(&path, &self.data)?;
 
-		return self;
+		return Ok(());
 
 	}
 
