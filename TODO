@@ -1,17 +1,20 @@
 # wengwengweng
 
-== DONE
-- [+] basic packing
-- [+] icon
-- [+] write plist programmatically
-- [+] validate arguments before action
-- [+] as lib
-- [+] fix copy file copy basename
-- [+] copy frameworks
-- [+] copy resources
-
 == DOING
+- fix icon not working
 
 == TODO
-- [ ] copy multiple resources and frameworks
+
+== DONE
+- basic packing
+- icon
+- write plist programmatically
+- validate arguments before action
+- as lib
+- fix copy file copy basename
+- copy frameworks
+- copy resources
+- use structopt
+- copy multiple resources and frameworks
+- proper error handling
 
