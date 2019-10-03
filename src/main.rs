@@ -2,11 +2,21 @@
 
 use std::path::PathBuf;
 use structopt::StructOpt;
+use structopt::clap::AppSettings::*;
 
 use packapp::*;
 
 #[derive(StructOpt, Debug)]
-#[structopt(name = "packapp")]
+#[structopt(
+	no_version,
+	global_settings(&[
+		ColoredHelp,
+		VersionlessSubcommands,
+		DisableHelpFlags,
+		DisableHelpSubcommand,
+		DisableVersion,
+	])
+)]
 struct Opt {
 
 	#[structopt(short = "r", long, parse(from_os_str))]
@@ -38,6 +48,9 @@ struct Opt {
 
 	#[structopt(short = "o", long, parse(from_os_str))]
 	out: Option<PathBuf>,
+
+	#[structopt(long)]
+	verbose: bool,
 
 }
 

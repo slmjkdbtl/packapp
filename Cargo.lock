@@ -90,7 +90,7 @@ dependencies = [
 
 [[package]]
 name = "packapp"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "fs_extra 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "plist 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
