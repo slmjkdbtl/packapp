@@ -12,7 +12,6 @@ use packapp::*;
 	global_settings(&[
 		ColoredHelp,
 		VersionlessSubcommands,
-		DisableHelpFlags,
 		DisableHelpSubcommand,
 		DisableVersion,
 	])

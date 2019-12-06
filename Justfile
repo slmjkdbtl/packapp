@@ -15,6 +15,7 @@ pack:
 	upx pkg/{{name}}
 	zip pkg/{{name}}-x86_64-apple-darwin.zip pkg/{{name}}
 	rm pkg/{{name}}
+	sha256sum pkg/{{name}}-x86_64-apple-darwin.zip
 
 doc crate="packapp":
 	cargo doc --no-deps --open -p {{crate}}
