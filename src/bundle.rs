@@ -18,27 +18,35 @@ enum AppDir {
 	MacOS,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-struct PlistData {
-	CFBundleName: Option<String>,
-	CFBundleDisplayName: Option<String>,
-	CFBundleIdentifier: Option<String>,
-	CFBundleVersion: Option<String>,
-	CFBundlePackageType: Option<String>,
-	CFBundleExecutable: Option<String>,
-	CFBundleIconFile: Option<String>,
-	CFBundleSignature: Option<String>,
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct PlistData {
+	#[serde(rename = "CFBundleName")]
+	pub name: Option<String>,
+	#[serde(rename = "CFBundleDisplayName")]
+	pub display_name: Option<String>,
+	#[serde(rename = "CFBundleIdentifier")]
+	pub identifier: Option<String>,
+	#[serde(rename = "CFBundleVersion")]
+	pub version: Option<String>,
+	#[serde(rename = "CFBundlePackageType")]
+	pub package_type: Option<String>,
+	#[serde(rename = "CFBundleExecutable")]
+	pub executable: String,
+	#[serde(rename = "CFBundleIconFile")]
+	pub icon_file: Option<String>,
+	#[serde(rename = "CFBundleSignature")]
+	pub signature: Option<String>,
+	#[serde(rename = "NSHighResolutionCapable")]
+	pub high_res_capable: bool,
 }
 
 pub struct Bundle {
-
 	bin: PathBuf,
 	data: PlistData,
 	output: PathBuf,
 	icon: Option<PathBuf>,
 	frameworks: Vec<PathBuf>,
 	resources: Vec<PathBuf>,
-
 }
 
 impl Bundle {
@@ -50,22 +58,24 @@ impl Bundle {
 		utils::assert_exists(path)?;
 
 		let name = utils::basename(path)?;
+		let oname = PathBuf::from(format!("{}.app", name));
 
 		let data = PlistData {
-			CFBundleName: None,
-			CFBundleDisplayName: None,
-			CFBundleIdentifier: None,
-			CFBundleVersion: None,
-			CFBundlePackageType: Some(String::from("APPL")),
-			CFBundleExecutable: Some(String::from(name.clone())),
-			CFBundleIconFile: None,
-			CFBundleSignature: None,
+			name: None,
+			display_name: None,
+			identifier: None,
+			version: None,
+			package_type: None,
+			executable: name,
+			icon_file: None,
+			signature: None,
+			high_res_capable: true,
 		};
 
 		let bundle = Self {
 			bin: path.to_owned(),
 			data: data,
-			output: PathBuf::from(format!("{}.app", name)),
+			output: oname,
 			icon: None,
 			frameworks: vec![],
 			resources: vec![],
@@ -79,20 +89,24 @@ impl Bundle {
 		self.output = path.as_ref().to_owned();
 	}
 
+	pub fn set_plist_data(&mut self, data: PlistData) {
+		self.data = data;
+	}
+
 	pub fn set_name(&mut self, name: &str) {
-		self.data.CFBundleName = Some(String::from(name));
+		self.data.name = Some(String::from(name));
 	}
 
 	pub fn set_display_name(&mut self, name: &str) {
-		self.data.CFBundleDisplayName = Some(String::from(name));
+		self.data.display_name = Some(String::from(name));
 	}
 
 	pub fn set_identifier(&mut self, ident: &str) {
-		self.data.CFBundleIdentifier = Some(String::from(ident));
+		self.data.identifier = Some(String::from(ident));
 	}
 
 	pub fn set_version(&mut self, version: &str) {
-		self.data.CFBundleVersion = Some(String::from(version));
+		self.data.version = Some(String::from(version));
 	}
 
 	pub fn set_icon(&mut self, path: impl AsRef<Path>) -> Result<()> {
@@ -101,7 +115,7 @@ impl Bundle {
 
 		utils::assert_exists(path)?;
 // 		utils::assert_ext(path, "icns")?;
-		self.data.CFBundleIconFile = Some(format!("{}", utils::base(path)?.display()));
+		self.data.icon_file = Some(format!("{}", utils::base(path)?.display()));
 		self.icon = Some(path.to_owned());
 
 		return Ok(());
