@@ -1,61 +1,62 @@
 // wengwengweng
 
 use std::path::PathBuf;
-use structopt::StructOpt;
-use structopt::clap::AppSettings::*;
+use argh::FromArgs;
 
 use packapp::*;
 
-#[derive(StructOpt, Debug)]
-#[structopt(
-	no_version,
-	global_settings(&[
-		ColoredHelp,
-		VersionlessSubcommands,
-		DisableHelpSubcommand,
-		DisableVersion,
-	])
-)]
+#[derive(FromArgs)]
+/// pack a binary to a MacOS .app bundle
 struct Opt {
 
-	#[structopt(short = "r", long, parse(from_os_str))]
-	resources: Vec<PathBuf>,
-
-	#[structopt(short = "f", long, parse(from_os_str))]
-	frameworks: Vec<PathBuf>,
-
-	#[structopt(short = "c", long, parse(from_os_str))]
-	icon: Option<PathBuf>,
-
-	#[structopt(short = "i", long)]
-	identifier: Option<String>,
-
-	#[structopt(short = "n", long)]
-	name: Option<String>,
-
-	#[structopt(short = "d", long)]
-	display_name: Option<String>,
-
-	#[structopt(short = "v", long)]
-	version: Option<String>,
-
-	#[structopt(short = "p", long)]
-	plain: bool,
-
-	#[structopt(name = "BIN", parse(from_os_str))]
+	#[argh(positional)]
 	bin: PathBuf,
 
-	#[structopt(short = "o", long, parse(from_os_str))]
+	#[argh(option, short = 'r')]
+	/// stuff to copy into the "Resources" folder
+	resources: Vec<PathBuf>,
+
+	#[argh(option, short = 'f')]
+	/// stuff to copy into the "Frameworks" folder
+	frameworks: Vec<PathBuf>,
+
+	#[argh(option, short = 'c')]
+	/// icon file
+	icon: Option<PathBuf>,
+
+	#[argh(option, short = 'i')]
+	/// app identifier
+	identifier: Option<String>,
+
+	#[argh(option, short = 'n')]
+	/// app name
+	name: Option<String>,
+
+	#[argh(option, short = 'd')]
+	/// app display name
+	display_name: Option<String>,
+
+	#[argh(option, short = 'v')]
+	/// app version
+	version: Option<String>,
+
+	#[argh(option, short = 't')]
+	/// file types that can be opened with this bundle
+	types: Vec<String>,
+
+	#[argh(option, short = 'o')]
+	/// output path
 	out: Option<PathBuf>,
 
-	#[structopt(long)]
+	#[argh(switch)]
+	/// verbose output
 	verbose: bool,
 
 }
 
 fn pack() -> Result<(), Error> {
 
-    let opt = Opt::from_args();
+    let opt = argh::from_env::<Opt>();
 	let mut bundle = Bundle::new(opt.bin)?;
 
 	if let Some(out) = &opt.out {

@@ -11,11 +11,25 @@ use serde::Serialize;
 use crate::utils;
 use crate::Result;
 
+#[derive(Clone, Copy, Debug)]
 enum AppDir {
+	MacOS,
 	Resources,
 	Frameworks,
 	Plugins,
-	MacOS,
+	SharedSupport,
+}
+
+impl AppDir {
+	pub fn as_str(&self) -> &'static str {
+		return match self {
+			AppDir::MacOS => "MacOS",
+			AppDir::Resources => "Resources",
+			AppDir::Frameworks => "Frameworks",
+			AppDir::Plugins => "PlugIns",
+			AppDir::SharedSupport => "SharedSupport",
+		};
+	}
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -29,7 +43,7 @@ pub struct PlistData {
 	#[serde(rename = "CFBundleVersion")]
 	pub version: Option<String>,
 	#[serde(rename = "CFBundlePackageType")]
-	pub package_type: Option<String>,
+	pub package_type: Option<PackageType>,
 	#[serde(rename = "CFBundleExecutable")]
 	pub executable: String,
 	#[serde(rename = "CFBundleIconFile")]
@@ -38,6 +52,30 @@ pub struct PlistData {
 	pub signature: Option<String>,
 	#[serde(rename = "NSHighResolutionCapable")]
 	pub high_res_capable: bool,
+	#[serde(rename = "CFBundleDocumentTypes")]
+	pub document_types: Option<Vec<DocumentType>>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct DocumentType {
+	#[serde(rename = "CFBundleTypeExtensions")]
+	pub extensions: Option<Vec<String>>,
+	#[serde(rename = "CFBundleTypeIconFile")]
+	pub icon_file: Option<String>,
+	#[serde(rename = "CFBundleTypeName")]
+	pub name: Option<String>,
+	#[serde(rename = "CFBundleTypeRole")]
+	pub role: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub enum PackageType {
+	#[serde(rename = "APPL")]
+	Application,
+	#[serde(rename = "FMWK")]
+	Framework,
+	#[serde(rename = "BNDL")]
+	Bundle,
 }
 
 pub struct Bundle {
@@ -70,6 +108,7 @@ impl Bundle {
 			icon_file: None,
 			signature: None,
 			high_res_capable: true,
+			document_types: None,
 		};
 
 		let bundle = Self {
@@ -109,17 +148,30 @@ impl Bundle {
 		self.data.version = Some(String::from(version));
 	}
 
+	pub fn set_package_type(&mut self, ty: PackageType) {
+		self.data.package_type = Some(ty);
+	}
+
 	pub fn set_icon(&mut self, path: impl AsRef<Path>) -> Result<()> {
 
 		let path = path.as_ref();
 
 		utils::assert_exists(path)?;
-// 		utils::assert_ext(path, "icns")?;
+		utils::assert_ext(path, "icns")?;
 		self.data.icon_file = Some(format!("{}", utils::base(path)?.display()));
 		self.icon = Some(path.to_owned());
 
 		return Ok(());
 
+	}
+
+	pub fn add_document_type(&mut self, d: DocumentType) {
+		if let Some(types) = &mut self.data.document_types {
+			types.push(d);
+		} else {
+			self.data.document_types = Some(vec![]);
+			self.add_document_type(d);
+		}
 	}
 
 	pub fn add_resource(&mut self, path: impl AsRef<Path>) -> Result<()> {
@@ -172,15 +224,7 @@ impl Bundle {
 	fn copy(&self, path: impl AsRef<Path>, des: AppDir) -> Result<()> {
 
 		let path = path.as_ref();
-
-		let dir = match des {
-			AppDir::MacOS => "MacOS",
-			AppDir::Resources => "Resources",
-			AppDir::Frameworks => "Frameworks",
-			AppDir::Plugins => "Plugins",
-		};
-
-		let dir = self.output.join("Contents").join(dir);
+		let dir = self.output.join("Contents").join(des.as_str());
 
 		if !utils::exists(&dir) {
 			utils::mkdir(&dir)?;

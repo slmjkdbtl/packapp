@@ -1,10 +1,12 @@
 # wengwengweng
 
 == DOING
-- fix icon not working
-- option to log every action
+- remove fs_extra dep
+- open file extensions
 
 == TODO
+- icns gen tool?
+- option to log every action
 
 == DONE
 - basic packing
@@ -19,4 +21,5 @@
 - copy multiple resources and frameworks
 - proper error handling
 - out dir
+- switch to argh
 
