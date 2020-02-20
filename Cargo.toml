@@ -2,17 +2,17 @@
 
 [package]
 name = "packapp"
-description = "pack a binary to MacOS .app bundle"
+description = "pack a binary to a MacOS .app bundle"
 version = "0.3.0"
 authors = ["tga <tga@wengwengweng.me>"]
-repository = "https://github.com/slmjkdbtl/DIRTY"
+repository = "https://github.com/slmjkdbtl/packapp"
 license = "Zlib"
 edition = "2018"
 readme = "README.md"
 exclude = ["TODO"]
 
 [dependencies]
-structopt = "0.3"
+argh = "0.1"
 fs_extra = "1.1"
 plist = "0.5"
 serde = { version = "1.0", features = [ "derive", ] }

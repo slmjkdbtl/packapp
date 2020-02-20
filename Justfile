@@ -5,6 +5,9 @@ name := "packapp"
 run +args="":
 	cargo run -- {{args}}
 
+build:
+	cargo build --release
+
 install:
 	cargo install --force --path .
 
