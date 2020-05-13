@@ -1,8 +1,5 @@
 # wengwengweng
 
 target/
-Cargo.lock
-**/*.rs.bk
-*.swp
 pkg/
 
