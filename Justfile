@@ -9,7 +9,9 @@ build:
 	cargo build --release
 
 install:
-	cargo install --force --path .
+	cargo install \
+		--force \
+		--path .
 
 pack:
 	rm -rf pkg
@@ -21,21 +23,19 @@ pack:
 	sha256sum pkg/{{name}}-x86_64-apple-darwin.zip
 
 doc crate="packapp":
-	cargo doc --no-deps --open -p {{crate}}
+	cargo doc \
+		--no-deps \
+		--open \
+		--all-features \
+		-p {{crate}}
 
 update:
 	cargo update
+	cargo outdated --root-deps-only
 
 bloat:
 	cargo bloat --release --crates
 
 loc:
 	loc
-
-checkdep:
-	cargo outdated --root-deps-only
-
-depgraph:
-	cargo deps --all-deps | dot -Tpng > $TMPDIR/graph.png; \
-		open $TMPDIR/graph.png
 

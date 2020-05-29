@@ -4,8 +4,8 @@
 name = "packapp"
 description = "pack a binary to a MacOS .app bundle"
 version = "0.3.0"
-authors = ["tga <tga@wengwengweng.me>"]
-repository = "https://github.com/slmjkdbtl/packapp"
+authors = ["tga <tga@enemyspy.xyz>"]
+repository = "https://git.sr.ht/~slmjkdbtl/packapp"
 license = "Zlib"
 edition = "2018"
 readme = "README.md"
