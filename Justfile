@@ -14,13 +14,13 @@ install:
 		--path .
 
 pack:
-	rm -rf pkg
-	mkdir -p pkg
-	cp target/release/{{name}} pkg/{{name}}
-	upx pkg/{{name}}
-	zip pkg/{{name}}-x86_64-apple-darwin.zip pkg/{{name}}
-	rm pkg/{{name}}
-	sha256sum pkg/{{name}}-x86_64-apple-darwin.zip
+	rm -rf dist
+	mkdir -p dist
+	cp target/release/{{name}} dist/{{name}}
+	upx dist/{{name}}
+	zip dist/{{name}}-x86_64-apple-darwin.zip dist/{{name}}
+	rm dist/{{name}}
+	sha256sum dist/{{name}}-x86_64-apple-darwin.zip
 
 doc crate="packapp":
 	cargo doc \
