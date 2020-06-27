@@ -3,7 +3,7 @@
 [package]
 name = "packapp"
 description = "pack a binary to a MacOS .app bundle"
-version = "0.3.1"
+version = "0.4.0"
 authors = ["tga <tga@enemyspy.xyz>"]
 repository = "https://git.sr.ht/~slmjkdbtl/packapp"
 license = "Zlib"

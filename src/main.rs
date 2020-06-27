@@ -1,97 +1,101 @@
 // wengwengweng
 
+mod utils;
+
 use std::path::PathBuf;
 use argh::FromArgs;
 
 use packapp::*;
 
-#[derive(FromArgs)]
+#[derive(FromArgs, Debug)]
 /// pack a binary to a MacOS .app bundle
 struct Opt {
-
+	/// binary path
 	#[argh(positional)]
 	bin: PathBuf,
-
-	#[argh(option, short = 'r')]
+	#[argh(option)]
 	/// stuff to copy into the "Resources" folder
-	resources: Vec<PathBuf>,
-
-	#[argh(option, short = 'f')]
+	res: Vec<PathBuf>,
+	#[argh(option)]
 	/// stuff to copy into the "Frameworks" folder
-	frameworks: Vec<PathBuf>,
-
-	#[argh(option, short = 'c')]
+	framework: Vec<PathBuf>,
+	#[argh(option)]
 	/// icon file
 	icon: Option<PathBuf>,
-
-	#[argh(option, short = 'i')]
+	#[argh(option)]
 	/// app identifier
-	identifier: Option<String>,
-
-	#[argh(option, short = 'n')]
+	ident: Option<String>,
+	#[argh(option)]
 	/// app name
 	name: Option<String>,
-
-	#[argh(option, short = 'd')]
+	#[argh(option)]
 	/// app display name
 	display_name: Option<String>,
-
-	#[argh(option, short = 'v')]
+	#[argh(option)]
 	/// app version
 	version: Option<String>,
-
-	#[argh(option, short = 't')]
+	#[argh(switch)]
+	/// if app is agent (won't show icon in dock)
+	agent: bool,
+	#[argh(switch)]
+	/// if app should render in high resolution
+	high_res: bool,
+	#[argh(option)]
 	/// file types that can be opened with this bundle
 	types: Vec<String>,
-
-	#[argh(option, short = 'o')]
+	#[argh(option)]
 	/// output path
 	out: Option<PathBuf>,
-
 	#[argh(switch)]
 	/// verbose output
 	verbose: bool,
-
 }
 
 fn pack() -> Result<(), Error> {
 
     let opt = argh::from_env::<Opt>();
-	let mut bundle = Bundle::new(opt.bin)?;
+	let name = utils::basename(&opt.bin)?;
+	let out = PathBuf::from(format!("{}.app", name));
+	let mut bb = BundleBuilder::new();
 
-	if let Some(out) = &opt.out {
-		bundle.set_output(out);
+	let mut plist = PlistData {
+		name: opt.name,
+		display_name: opt.display_name,
+		identifier: opt.ident,
+		version: opt.version,
+		package_type: None,
+		executable: Some(name),
+		icon_file: opt.icon,
+		signature: None,
+		high_res: None,
+		is_agent: None,
+		document_types: None,
+	};
+
+	if opt.high_res {
+		plist.high_res = Some(true);
+	} else {
+		plist.high_res = None;
 	}
 
-	if let Some(name) = &opt.name {
-		bundle.set_name(name);
+	if opt.agent {
+		plist.is_agent = Some(true);
+	} else {
+		plist.is_agent = None;
 	}
 
-	if let Some(display_name) = &opt.display_name {
-		bundle.set_display_name(display_name);
+	bb.bin(&opt.bin);
+	bb.plist(plist);
+
+	for r in opt.res {
+		bb.resource(r);
 	}
 
-	if let Some(identifier) = &opt.identifier {
-		bundle.set_identifier(identifier);
+	for f in opt.framework {
+		bb.framework(f);
 	}
 
-	if let Some(version) = &opt.version {
-		bundle.set_version(version);
-	}
-
-	if let Some(icon) = opt.icon {
-		bundle.set_icon(icon)?;
-	}
-
-	for r in opt.resources {
-		bundle.add_resource(r)?;
-	}
-
-	for f in opt.frameworks {
-		bundle.add_framework(f)?;
-	}
-
-	bundle.write()?;
+	bb.build(out)?;
 
 	return Ok(());
 

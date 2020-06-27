@@ -4,7 +4,7 @@ use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
 
-use crate::Result;
+type Result<T> = ::std::result::Result<T, Error>;
 use crate::Error;
 
 pub fn exists(path: impl AsRef<Path>) -> bool {

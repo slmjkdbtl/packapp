@@ -1,6 +1,7 @@
 // wengwengweng
 
 // https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html
+// https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Introduction/Introduction.html
 
 use std::path::PathBuf;
 use std::path::Path;
@@ -32,7 +33,7 @@ impl AppDir {
 	}
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct PlistData {
 	#[serde(rename = "CFBundleName")]
 	pub name: Option<String>,
@@ -45,15 +46,17 @@ pub struct PlistData {
 	#[serde(rename = "CFBundlePackageType")]
 	pub package_type: Option<PackageType>,
 	#[serde(rename = "CFBundleExecutable")]
-	pub executable: String,
+	pub executable: Option<String>,
 	#[serde(rename = "CFBundleIconFile")]
-	pub icon_file: Option<String>,
+	pub icon_file: Option<PathBuf>,
 	#[serde(rename = "CFBundleSignature")]
 	pub signature: Option<String>,
 	#[serde(rename = "NSHighResolutionCapable")]
-	pub high_res_capable: bool,
+	pub high_res: Option<bool>,
 	#[serde(rename = "CFBundleDocumentTypes")]
 	pub document_types: Option<Vec<DocumentType>>,
+	#[serde(rename = "LSUIElement")]
+	pub is_agent: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -78,153 +81,77 @@ pub enum PackageType {
 	Bundle,
 }
 
-pub struct Bundle {
-	bin: PathBuf,
-	data: PlistData,
-	output: PathBuf,
-	icon: Option<PathBuf>,
+pub struct BundleBuilder {
+	bin: Option<PathBuf>,
+	plist: PlistData,
 	frameworks: Vec<PathBuf>,
 	resources: Vec<PathBuf>,
 }
 
-impl Bundle {
+impl BundleBuilder {
 
-	pub fn new(path: impl AsRef<Path>) -> Result<Self> {
-
-		let path = path.as_ref();
-
-		utils::assert_exists(path)?;
-
-		let name = utils::basename(path)?;
-		let oname = PathBuf::from(format!("{}.app", name));
-
-		let data = PlistData {
-			name: None,
-			display_name: None,
-			identifier: None,
-			version: None,
-			package_type: None,
-			executable: name,
-			icon_file: None,
-			signature: None,
-			high_res_capable: true,
-			document_types: None,
-		};
-
-		let bundle = Self {
-			bin: path.to_owned(),
-			data: data,
-			output: oname,
-			icon: None,
+	pub fn new() -> Self {
+		return Self {
+			bin: None,
+			plist: PlistData::default(),
 			frameworks: vec![],
 			resources: vec![],
 		};
-
-		return Ok(bundle);
-
 	}
 
-	pub fn set_output(&mut self, path: impl AsRef<Path>) {
-		self.output = path.as_ref().to_owned();
+	pub fn bin(&mut self, path: impl AsRef<Path>) -> &mut Self {
+		self.bin = Some(path.as_ref().to_path_buf());
+		return self;
 	}
 
-	pub fn set_plist_data(&mut self, data: PlistData) {
-		self.data = data;
+	pub fn plist(&mut self, plist: PlistData) -> &mut Self {
+		self.plist = plist;
+		return self;
 	}
 
-	pub fn set_name(&mut self, name: &str) {
-		self.data.name = Some(String::from(name));
+	pub fn resource(&mut self, path: impl AsRef<Path>) -> &mut Self {
+		self.resources.push(path.as_ref().to_path_buf());
+		return self;
 	}
 
-	pub fn set_display_name(&mut self, name: &str) {
-		self.data.display_name = Some(String::from(name));
+	pub fn framework(&mut self, path: impl AsRef<Path>) -> &mut Self {
+		self.frameworks.push(path.as_ref().to_path_buf());
+		return self;
 	}
 
-	pub fn set_identifier(&mut self, ident: &str) {
-		self.data.identifier = Some(String::from(ident));
-	}
+	pub fn build(self, out: impl AsRef<Path>) -> Result<()> {
 
-	pub fn set_version(&mut self, version: &str) {
-		self.data.version = Some(String::from(version));
-	}
+		let out = out.as_ref();
 
-	pub fn set_package_type(&mut self, ty: PackageType) {
-		self.data.package_type = Some(ty);
-	}
+		utils::mkdir(&out)?;
+		utils::mkdir(out.join("Contents"))?;
 
-	pub fn set_icon(&mut self, path: impl AsRef<Path>) -> Result<()> {
-
-		let path = path.as_ref();
-
-		utils::assert_exists(path)?;
-		utils::assert_ext(path, "icns")?;
-		self.data.icon_file = Some(format!("{}", utils::base(path)?.display()));
-		self.icon = Some(path.to_owned());
-
-		return Ok(());
-
-	}
-
-	pub fn add_document_type(&mut self, d: DocumentType) {
-		if let Some(types) = &mut self.data.document_types {
-			types.push(d);
-		} else {
-			self.data.document_types = Some(vec![]);
-			self.add_document_type(d);
-		}
-	}
-
-	pub fn add_resource(&mut self, path: impl AsRef<Path>) -> Result<()> {
-
-		let path = path.as_ref();
-
-		utils::assert_exists(path)?;
-		self.resources.push(path.to_owned());
-
-		return Ok(());
-
-	}
-
-	pub fn add_framework(&mut self, path: impl AsRef<Path>) -> Result<()> {
-
-		let path = path.as_ref();
-
-		utils::assert_exists(path)?;
-		self.frameworks.push(path.to_owned());
-
-		return Ok(());
-
-	}
-
-	pub fn write(&self) -> Result<()> {
-
-		utils::mkdir(&self.output)?;
-		utils::mkdir(self.output.join("Contents"))?;
-
-		self.copy(&self.bin, AppDir::MacOS)?;
-
-		if let Some(icon) = &self.icon {
-			self.copy(icon, AppDir::Resources)?;
+		if let Some(bin) = &self.bin {
+			self.copy(bin, out, AppDir::MacOS)?;
 		}
 
 		for r in &self.resources {
-			self.copy(&r, AppDir::Resources)?;
+			self.copy(r, out, AppDir::Resources)?;
 		}
 
 		for f in &self.frameworks {
-			self.copy(&f, AppDir::Frameworks)?;
+			self.copy(f, out, AppDir::Frameworks)?;
 		}
 
-		self.write_plist()?;
+		// write plist
+		let plist_path = out.join("Contents").join("Info.plist");
+
+		plist::to_file_xml(&plist_path, &self.plist)?;
 
 		return Ok(());
 
 	}
 
-	fn copy(&self, path: impl AsRef<Path>, des: AppDir) -> Result<()> {
+	fn copy(&self, path: impl AsRef<Path>, out: impl AsRef<Path>, dest: AppDir) -> Result<()> {
 
+		let out = out.as_ref();
 		let path = path.as_ref();
-		let dir = self.output.join("Contents").join(des.as_str());
+		let dir = out.join("Contents").join(dest.as_str());
 
 		if !utils::exists(&dir) {
 			utils::mkdir(&dir)?;
@@ -235,16 +162,6 @@ impl Bundle {
 		} else if utils::is_dir(path) {
 			utils::copy_dir(path, dir.join(utils::base(path)?))?;
 		}
-
-		return Ok(());
-
-	}
-
-	fn write_plist(&self) -> Result<()> {
-
-		let path = self.output.join("Contents").join("Info.plist");
-
-		plist::to_file_xml(&path, &self.data)?;
 
 		return Ok(());
 
