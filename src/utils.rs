@@ -37,17 +37,19 @@ pub fn mkdir(path: impl AsRef<Path>) -> Result<()> {
 
 }
 
-pub fn copy(p1: impl AsRef<Path>, p2: impl AsRef<Path>) -> Result<u64> {
+pub fn copy(p1: impl AsRef<Path>, p2: impl AsRef<Path>) -> Result<()> {
 
 	let p1 = p1.as_ref();
 	let p2 = p2.as_ref();
 
-	return fs::copy(p1, p2)
-		.map_err(|_| Error::IO(format!("failed to copy {} to {}", p1.display(), p2.display())));
+	fs::copy(p1, p2)
+		.map_err(|_| Error::IO(format!("failed to copy {} to {}", p1.display(), p2.display())))?;
+
+	return Ok(());
 
 }
 
-pub fn copy_dir(p1: impl AsRef<Path>, p2: impl AsRef<Path>) -> Result<u64> {
+pub fn copy_dir(p1: impl AsRef<Path>, p2: impl AsRef<Path>) -> Result<()> {
 
 	let p1 = p1.as_ref();
 	let p2 = p2.as_ref();
@@ -56,8 +58,10 @@ pub fn copy_dir(p1: impl AsRef<Path>, p2: impl AsRef<Path>) -> Result<u64> {
 	options.overwrite = true;
 	options.copy_inside = true;
 
-	return fs_extra::dir::copy(p1, p2, &options)
-		.map_err(|_| Error::IO(format!("failed to copy {} to {}", p1.display(), p2.display())));
+	fs_extra::dir::copy(p1, p2, &options)
+		.map_err(|_| Error::IO(format!("failed to copy {} to {}", p1.display(), p2.display())))?;
+
+	return Ok(());
 
 }
 

@@ -9,8 +9,7 @@ use std::path::Path;
 use serde::Deserialize;
 use serde::Serialize;
 
-use crate::utils;
-use crate::Result;
+use crate::*;
 
 #[derive(Clone, Copy, Debug)]
 enum AppDir {
@@ -61,14 +60,24 @@ pub struct PlistData {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DocumentType {
-	#[serde(rename = "CFBundleTypeExtensions")]
-	pub extensions: Option<Vec<String>>,
-	#[serde(rename = "CFBundleTypeIconFile")]
-	pub icon_file: Option<String>,
 	#[serde(rename = "CFBundleTypeName")]
 	pub name: Option<String>,
+	#[serde(rename = "CFBundleTypeExtensions")]
+	pub extensions: Option<Vec<String>>,
 	#[serde(rename = "CFBundleTypeRole")]
-	pub role: Option<String>,
+	pub role: Option<Role>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub enum Role {
+	#[serde(rename = "Editor")]
+	Editor,
+	#[serde(rename = "Viewer")]
+	Viewer,
+	#[serde(rename = "Shell")]
+	Shell,
+	#[serde(rename = "None")]
+	None,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -152,6 +161,10 @@ impl BundleBuilder {
 		let out = out.as_ref();
 		let path = path.as_ref();
 		let dir = out.join("Contents").join(dest.as_str());
+
+		if !path.exists() {
+			return Err(Error::IO(format!("path '{}' not found", path.display())));
+		}
 
 		if !utils::exists(&dir) {
 			utils::mkdir(&dir)?;

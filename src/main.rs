@@ -35,28 +35,25 @@ struct Opt {
 	/// app version
 	version: Option<String>,
 	#[argh(switch)]
-	/// if app is agent (won't show icon in dock)
-	agent: bool,
-	#[argh(switch)]
 	/// if app should render in high resolution
 	high_res: bool,
 	#[argh(option)]
-	/// file types that can be opened with this bundle
-	types: Vec<String>,
-	#[argh(option)]
 	/// output path
-	out: Option<PathBuf>,
-	#[argh(switch)]
-	/// verbose output
-	verbose: bool,
+	output: Option<PathBuf>,
 }
 
 fn pack() -> Result<(), Error> {
 
     let opt = argh::from_env::<Opt>();
 	let name = utils::basename(&opt.bin)?;
-	let out = PathBuf::from(format!("{}.app", name));
+	let out = opt.output.unwrap_or(PathBuf::from(format!("{}.app", name)));
 	let mut bb = BundleBuilder::new();
+
+	if let Some(icon) = &opt.icon {
+		if icon.exists() {
+			bb.resource(icon);
+		}
+	}
 
 	let mut plist = PlistData {
 		name: opt.name,
@@ -78,12 +75,6 @@ fn pack() -> Result<(), Error> {
 		plist.high_res = None;
 	}
 
-	if opt.agent {
-		plist.is_agent = Some(true);
-	} else {
-		plist.is_agent = None;
-	}
-
 	bb.bin(&opt.bin);
 	bb.plist(plist);
 
@@ -103,7 +94,7 @@ fn pack() -> Result<(), Error> {
 
 fn main() {
 	if let Err(e) = pack() {
-		println!("{}", e);
+		eprintln!("{}", e);
 	}
 }
 

@@ -1,6 +1,7 @@
 // wengwengweng
 
 use std::fmt;
+use std::path::PathBuf;
 
 #[derive(Debug)]
 pub enum Error {

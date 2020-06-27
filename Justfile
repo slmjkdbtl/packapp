@@ -20,7 +20,7 @@ pack:
 	upx dist/{{name}}
 	zip dist/{{name}}-x86_64-apple-darwin.zip dist/{{name}}
 	rm dist/{{name}}
-	sha256sum dist/{{name}}-x86_64-apple-darwin.zip
+	sha256sum dist/{{name}}-x86_64-apple-darwin.zip > dist/sha256
 
 doc crate="packapp":
 	cargo doc \

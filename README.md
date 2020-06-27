@@ -6,17 +6,20 @@ pack a binary to MacOS .app bundle
 USAGE:
     packapp [OPTIONS] <bin>
 
-FLAGS:
-    -h, --help    Prints help information
-
-OPTIONS:
-    -d, --display-name <display-name>
-    -f, --frameworks <frameworks>...
-    -c, --icon <icon>
-    -i, --identifier <identifier>
-    -n, --name <name>
-    -r, --resources <resources>...
-    -v, --version <version>
+Options:
+    --res             stuff to copy into the "Resources" folder
+    --framework       stuff to copy into the "Frameworks" folder
+    --icon            icon file
+    --ident           app identifier
+    --name            app name
+    --display-name    app display name
+    --version         app version
+    --agent           if app is agent (won't show icon in dock)
+    --high-res        if app should render in high resolution
+    --filetype        file types that can be opened with this bundle
+    --out             output path
+    --verbose         verbose output
+    --help            display usage information
 
 ARGS:
     <bin>
